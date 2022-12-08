@@ -34,12 +34,15 @@ module Roo
       end
 
       # Yield each row as array of Excelx::Cell objects
-      # accepts options max_rows (int) (offset by 1 for header),
-      # pad_cells (boolean) and offset (int)
+      #
+      # @option offset [ Integer ]
+      # @option max_rows [ Integer ] Max rows to return, offset by 1 for header
+      # @option pad_cells [ Boolean ] Include nil empty cells. Defaults to false.
+      # @option include_empty_rows [ Boolean ] Include empty rows. Defaults to false.
       def each_row(options = {}, &block)
         row_count = 0
         options[:offset] ||= 0
-        @sheet.each_row_streaming do |row|
+        @sheet.each_row_streaming(options) do |row|
           break if options[:max_rows] && row_count == options[:max_rows] + options[:offset] + 1
           if block_given? && !(options[:offset] && row_count < options[:offset])
             block.call(cells_for_row_element(row, options))
@@ -102,7 +105,9 @@ module Roo
       # optionally pad array to header width(assumed 1st row).
       # takes option pad_cells (boolean) defaults false
       def cells_for_row_element(row_element, options = {})
+        return empty_row if options[:pad_cells] && !row_element
         return [] unless row_element
+
         cell_col = 0
         cells = []
         @sheet.each_cell(row_element) do |cell|
@@ -110,13 +115,17 @@ module Roo
           cells << cell
           cell_col = cell.coordinate.column
         end
+        (first_last_row_col[:last_column] - cell_col).times { cells << nil } if options[:pad_cells]
         cells
       end
 
       def pad_cells(cell, last_column)
-        pad = []
-        (cell.coordinate.column - 1 - last_column).times { pad << nil }
-        pad
+        (cell.coordinate.column - 1 - last_column).times.map { nil }
+      end
+
+      # @return [ Array<nil> ] Row of nil cells, up to last column in sheet
+      def empty_row
+        @empty_row ||= first_last_row_col[:last_column].times.map { nil }
       end
 
       def first_last_row_col

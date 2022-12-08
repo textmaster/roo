@@ -37,8 +37,21 @@ module Roo
       end
 
       # Yield each row xml element to caller
-      def each_row_streaming(&block)
-        Roo::Utils.each_element(@path, 'row', &block)
+      #
+      # @option include_empty_rows [ Boolean ] Include empty rows. Defaults to false.
+      def each_row_streaming(options = {}, &block)
+        previous_row_index = 0
+        Roo::Utils.each_element(@path, 'row') do |row_xml|
+          if options[:include_empty_rows]
+            row_index = row_xml['r'].to_i
+            if row_index > previous_row_index + 1
+              (row_index - previous_row_index - 1).times { block.call(nil) }
+            end
+            previous_row_index = row_index
+          end
+
+          block.call(row_xml)
+        end
       end
 
       # Yield each cell as Excelx::Cell to caller for given
