@@ -484,39 +484,18 @@ describe Roo::Excelx do
     end
   end
 
-  # nil, nil, nil, nil, nil
-  # nil, nil, nil, nil, nil
-  # Date	Start time	End time	Pause	Sum	Comment
-  # 2007-05-07	9.25	10.25	0	1	Task 1
-  # 2007-05-07	10.75	12.50	0	1.75	Task 1
-  # 2007-05-07	18.00	19.00	0	1	Task 2
-  # 2007-05-08	9.25	10.25	0	1	Task 2
-  # 2007-05-08	14.50	15.50	0	1	Task 3
-  # 2007-05-08	8.75	9.25	0	0.5	Task 3
-  # 2007-05-14	21.75	22.25	0	0.5	Task 3
-  # 2007-05-14	22.50	23.00	0	0.5	Task 3
-  # 2007-05-15	11.75	12.75	0	1	Task 3
-  # 2007-05-07	10.75	10.75	0	0	Task 1
-  # nil
   describe '#each_row_streaming' do
-    let(:path) { 'test/files/simple_spreadsheet.xlsx' }
+    let(:path) { 'test/files/simple_spreadsheet_empty_cells.xlsx' }
 
     let(:expected_rows) do
       [
-          [nil, nil, nil, nil, nil],
-          [nil, nil, nil, nil, nil],
-          ["Date", "Start time", "End time", "Pause", "Sum", "Comment", nil, nil],
-          [Date.new(2007, 5, 7), 9.25, 10.25, 0.0, 1.0, "Task 1"],
-          [Date.new(2007, 5, 7), 10.75, 12.50, 0.0, 1.75, "Task 1"],
-          [Date.new(2007, 5, 7), 18.0, 19.0, 0.0, 1.0, "Task 2"],
-          [Date.new(2007, 5, 8), 9.25, 10.25, 0.0, 1.0, "Task 2"],
-          [Date.new(2007, 5, 8), 14.5, 15.5, 0.0, 1.0, "Task 3"],
-          [Date.new(2007, 5, 8), 8.75, 9.25, 0.0, 0.5, "Task 3"],
-          [Date.new(2007, 5, 14), 21.75, 22.25, 0.0, 0.5, "Task 3"],
-          [Date.new(2007, 5, 14), 22.5, 23.0, 0.0, 0.5, "Task 3"],
-          [Date.new(2007, 5, 15), 11.75, 12.75, 0.0, 1.0, "Task 3"],
-          [Date.new(2007, 5, 7), 10.75, 10.75, 0.0, 0.0, "Task 1"],
-          [nil]
+          ["Date", "Start time", "End time", "Comment", "Other"],
+          [Date.new(2007, 5, 7), 9.25, 10.25, "Task 1"],
+          [Date.new(2007, 5, 7), 18.0, 19.0, "Task 2"],
+          [Date.new(2007, 5, 8), 14.5, 15.5, "Task 3"],
+          [Date.new(2007, 5, 8), 10.75, 12.75, "Task 4"],
+          [Date.new(2007, 5, 9), 8.0, 10.0, "Task 5"],
+          [Date.new(2007, 5, 10), 9.0, 11.0, "Task 6"],
       ]
     end
 
@@ -542,7 +521,7 @@ describe Roo::Excelx do
     end
 
     context 'with offset option' do
-      let(:offset) { 3 }
+      let(:offset) { 2 }
 
       it 'returns the expected result' do
         index = 0
@@ -550,12 +529,12 @@ describe Roo::Excelx do
           expect(row.map(&:value)).to eq expected_rows[index + offset]
           index += 1
         end
-        expect(index).to eq 11
+        expect(index).to eq 5
       end
     end
 
     context 'with offset and max_rows options' do
-      let(:offset) { 3 }
+      let(:offset) { 2 }
       let(:max_rows) { 3 }
 
       it 'returns the expected result' do
@@ -565,6 +544,85 @@ describe Roo::Excelx do
           index += 1
         end
         expect(index).to eq 4
+      end
+    end
+
+    context 'with pad_cells option' do
+      let(:expected_rows) do
+        [
+            ["Date", "Start time", "End time", nil, "Comment", "Other"],
+            [Date.new(2007, 5, 7), 9.25, 10.25, nil, "Task 1", nil],
+            [Date.new(2007, 5, 7), 18.0, 19.0, nil, "Task 2", nil],
+            [Date.new(2007, 5, 8), 14.5, 15.5, nil, "Task 3", nil],
+            [Date.new(2007, 5, 8), 10.75, 12.75, nil, "Task 4", nil],
+            [Date.new(2007, 5, 9), 8.0, 10.0, nil, "Task 5", nil],
+            [Date.new(2007, 5, 10), 9.0, 11.0, nil, "Task 6", nil],
+        ]
+      end
+
+      it 'includes empty cells' do
+        index = 0
+        subject.each_row_streaming(pad_cells: true) do |row|
+          expect(row.map { |c| c&.value }).to eq expected_rows[index]
+          index += 1
+        end
+        expect(index).to eq 7
+      end
+    end
+
+    context 'with include_empty_rows option' do
+      let(:expected_rows) do
+        [
+            [],
+            [],
+            ["Date", "Start time", "End time", "Comment", "Other"],
+            [Date.new(2007, 5, 7), 9.25, 10.25, "Task 1"],
+            [],
+            [Date.new(2007, 5, 7), 18.0, 19.0, "Task 2"],
+            [],
+            [],
+            [Date.new(2007, 5, 8), 14.5, 15.5, "Task 3"],
+            [Date.new(2007, 5, 8), 10.75, 12.75, "Task 4"],
+            [Date.new(2007, 5, 9), 8.0, 10.0, "Task 5"],
+            [Date.new(2007, 5, 10), 9.0, 11.0, "Task 6"],
+        ]
+      end
+
+      it 'includes empty rows' do
+        index = 0
+        subject.each_row_streaming(include_empty_rows: true) do |row|
+          expect(row.map { |c| c&.value }).to eq expected_rows[index]
+          index += 1
+        end
+        expect(index).to eq 12
+      end
+    end
+
+    context 'with include_empty_rows and pad_cells option' do
+      let(:expected_rows) do
+        [
+            [nil, nil, nil, nil, nil, nil],
+            [nil, nil, nil, nil, nil, nil],
+            ["Date", "Start time", "End time", nil, "Comment", "Other"],
+            [Date.new(2007, 5, 7), 9.25, 10.25, nil, "Task 1", nil],
+            [nil, nil, nil, nil, nil, nil],
+            [Date.new(2007, 5, 7), 18.0, 19.0, nil, "Task 2", nil],
+            [nil, nil, nil, nil, nil, nil],
+            [nil, nil, nil, nil, nil, nil],
+            [Date.new(2007, 5, 8), 14.5, 15.5, nil, "Task 3", nil],
+            [Date.new(2007, 5, 8), 10.75, 12.75, nil, "Task 4", nil],
+            [Date.new(2007, 5, 9), 8.0, 10.0, nil, "Task 5", nil],
+            [Date.new(2007, 5, 10), 9.0, 11.0, nil, "Task 6", nil],
+        ]
+      end
+
+      it 'includes empty rows and empty cells' do
+        index = 0
+        subject.each_row_streaming(pad_cells: true, include_empty_rows: true) do |row|
+          expect(row.map { |c| c&.value }).to eq expected_rows[index]
+          index += 1
+        end
+        expect(index).to eq 12
       end
     end
 
