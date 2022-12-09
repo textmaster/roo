@@ -601,8 +601,8 @@ describe Roo::Excelx do
     context 'with include_empty_rows and pad_cells option' do
       let(:expected_rows) do
         [
-            [nil, nil, nil, nil, nil, nil],
-            [nil, nil, nil, nil, nil, nil],
+            [],
+            [],
             ["Date", "Start time", "End time", nil, "Comment", "Other"],
             [Date.new(2007, 5, 7), 9.25, 10.25, nil, "Task 1", nil],
             [nil, nil, nil, nil, nil, nil],

@@ -42,10 +42,13 @@ module Roo
       def each_row(options = {}, &block)
         row_count = 0
         options[:offset] ||= 0
+        options[:pad_until] ||= 0
         @sheet.each_row_streaming(options) do |row|
           break if options[:max_rows] && row_count == options[:max_rows] + options[:offset] + 1
           if block_given? && !(options[:offset] && row_count < options[:offset])
-            block.call(cells_for_row_element(row, options))
+            row_cells = cells_for_row_element(row, options)
+            options[:pad_until] = row_cells.count if row_cells.count > options[:pad_until]
+            block.call(row_cells)
           end
           row_count += 1
         end
@@ -105,7 +108,8 @@ module Roo
       # optionally pad array to header width(assumed 1st row).
       # takes option pad_cells (boolean) defaults false
       def cells_for_row_element(row_element, options = {})
-        return empty_row if options[:pad_cells] && !row_element
+        pad_until = options[:pad_until] || 0
+        return empty_row(pad_until) if options[:pad_cells] && !row_element
         return [] unless row_element
 
         cell_col = 0
@@ -115,7 +119,7 @@ module Roo
           cells << cell
           cell_col = cell.coordinate.column
         end
-        (first_last_row_col[:last_column] - cell_col).times { cells << nil } if options[:pad_cells]
+        (pad_until - cell_col).times { cells << nil } if options[:pad_cells]
         cells
       end
 
@@ -123,9 +127,11 @@ module Roo
         (cell.coordinate.column - 1 - last_column).times.map { nil }
       end
 
+      # @param cols [ Integer ] Number of cells to put in the row
       # @return [ Array<nil> ] Row of nil cells, up to last column in sheet
-      def empty_row
-        @empty_row ||= first_last_row_col[:last_column].times.map { nil }
+      def empty_row(cols = 0)
+        @empty_rows ||= {}
+        @empty_rows[cols] ||= cols.times.map { nil }
       end
 
       def first_last_row_col
