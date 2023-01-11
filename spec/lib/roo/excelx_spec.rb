@@ -496,6 +496,8 @@ describe Roo::Excelx do
           [Date.new(2007, 5, 8), 10.75, 12.75, "Task 4"],
           [Date.new(2007, 5, 9), 8.0, 10.0, "Task 5"],
           [Date.new(2007, 5, 10), 9.0, 11.0, "Task 6"],
+          [nil, nil, nil], # 3 empty cells with only borders
+          [],
       ]
     end
 
@@ -529,7 +531,7 @@ describe Roo::Excelx do
           expect(row.map(&:value)).to eq expected_rows[index + offset]
           index += 1
         end
-        expect(index).to eq 5
+        expect(index).to eq 7
       end
     end
 
@@ -557,6 +559,8 @@ describe Roo::Excelx do
             [Date.new(2007, 5, 8), 10.75, 12.75, nil, "Task 4", nil],
             [Date.new(2007, 5, 9), 8.0, 10.0, nil, "Task 5", nil],
             [Date.new(2007, 5, 10), 9.0, 11.0, nil, "Task 6", nil],
+            [nil, nil, nil, nil, nil, nil], # 3 empty cells with only borders, plus padding
+            [nil, nil, nil, nil, nil, nil],
         ]
       end
 
@@ -566,7 +570,7 @@ describe Roo::Excelx do
           expect(row.map { |c| c&.value }).to eq expected_rows[index]
           index += 1
         end
-        expect(index).to eq 7
+        expect(index).to eq 9
       end
     end
 
@@ -585,6 +589,10 @@ describe Roo::Excelx do
             [Date.new(2007, 5, 8), 10.75, 12.75, "Task 4"],
             [Date.new(2007, 5, 9), 8.0, 10.0, "Task 5"],
             [Date.new(2007, 5, 10), 9.0, 11.0, "Task 6"],
+            [],
+            [nil, nil, nil], # 3 empty cells with only borders
+            [],
+            [],
         ]
       end
 
@@ -594,7 +602,7 @@ describe Roo::Excelx do
           expect(row.map { |c| c&.value }).to eq expected_rows[index]
           index += 1
         end
-        expect(index).to eq 12
+        expect(index).to eq 16
       end
     end
 
@@ -613,6 +621,10 @@ describe Roo::Excelx do
             [Date.new(2007, 5, 8), 10.75, 12.75, nil, "Task 4", nil],
             [Date.new(2007, 5, 9), 8.0, 10.0, nil, "Task 5", nil],
             [Date.new(2007, 5, 10), 9.0, 11.0, nil, "Task 6", nil],
+            [nil, nil, nil, nil, nil, nil],
+            [nil, nil, nil, nil, nil, nil],
+            [nil, nil, nil, nil, nil, nil],
+            [nil, nil, nil, nil, nil, nil],
         ]
       end
 
@@ -622,7 +634,7 @@ describe Roo::Excelx do
           expect(row.map { |c| c&.value }).to eq expected_rows[index]
           index += 1
         end
-        expect(index).to eq 12
+        expect(index).to eq 16
       end
     end
 
