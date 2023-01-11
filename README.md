@@ -174,6 +174,16 @@ xlsx.each_row_streaming(pad_cells: true) do |row|
 end
 ```
 
+By default, only rows with some content in the cells are yielded.
+If you want all rows, including the empty ones, to be streamed, use the option
+`include_empty_rows = true`.
+Note that trailing empty rows will never be returned.
+```ruby
+xlsx.each_row_streaming(include_empty_rows: true) do |row|
+  puts row.inspect # Array of Excelx::Cell objects
+end
+```
+
 To stream only some of the rows, you can use the ```max_rows``` and ```offset```options.
 ```ruby
 xlsx.each_row_streaming(offset: 1) do |row| # Will exclude first (inevitably header) row

@@ -36,13 +36,17 @@ module Roo
         @dimensions ||= extract_dimensions
       end
 
-      # Yield each row xml element to caller
+      # Yield each row xml element to caller.
       #
-      # @option include_empty_rows [ Boolean ] Include empty rows. Defaults to false.
+      # @option include_empty_rows [ Boolean ] Include empty rows that are followed by any non-empty row
+      #                                        at a further index. Defaults to false.
       def each_row_streaming(options = {}, &block)
         previous_row_index = 0
         Roo::Utils.each_element(@path, 'row') do |row_xml|
+          next if empty_row?(row_xml)
+
           if options[:include_empty_rows]
+            # Include all empty rows since last row index
             row_index = row_xml['r'].to_i
             if row_index > previous_row_index + 1
               (row_index - previous_row_index - 1).times { block.call(nil) }
@@ -52,6 +56,14 @@ module Roo
 
           block.call(row_xml)
         end
+      end
+
+      def empty_row?(row_xml)
+        each_cell(row_xml) do |cell|
+          return false unless cell.empty?
+        end
+
+        true
       end
 
       # Yield each cell as Excelx::Cell to caller for given

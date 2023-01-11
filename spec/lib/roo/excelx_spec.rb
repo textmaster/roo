@@ -496,8 +496,6 @@ describe Roo::Excelx do
           [Date.new(2007, 5, 8), 10.75, 12.75, "Task 4"],
           [Date.new(2007, 5, 9), 8.0, 10.0, "Task 5"],
           [Date.new(2007, 5, 10), 9.0, 11.0, "Task 6"],
-          [nil, nil, nil], # 3 empty cells with only borders
-          [],
       ]
     end
 
@@ -507,6 +505,7 @@ describe Roo::Excelx do
         expect(row.map(&:value)).to eq expected_rows[index]
         index += 1
       end
+      expect(index).to eq 7
     end
 
     context 'with max_rows options' do
@@ -531,7 +530,7 @@ describe Roo::Excelx do
           expect(row.map(&:value)).to eq expected_rows[index + offset]
           index += 1
         end
-        expect(index).to eq 7
+        expect(index).to eq 5
       end
     end
 
@@ -559,8 +558,6 @@ describe Roo::Excelx do
             [Date.new(2007, 5, 8), 10.75, 12.75, nil, "Task 4", nil],
             [Date.new(2007, 5, 9), 8.0, 10.0, nil, "Task 5", nil],
             [Date.new(2007, 5, 10), 9.0, 11.0, nil, "Task 6", nil],
-            [nil, nil, nil, nil, nil, nil], # 3 empty cells with only borders, plus padding
-            [nil, nil, nil, nil, nil, nil],
         ]
       end
 
@@ -570,7 +567,7 @@ describe Roo::Excelx do
           expect(row.map { |c| c&.value }).to eq expected_rows[index]
           index += 1
         end
-        expect(index).to eq 9
+        expect(index).to eq 7
       end
     end
 
@@ -589,20 +586,17 @@ describe Roo::Excelx do
             [Date.new(2007, 5, 8), 10.75, 12.75, "Task 4"],
             [Date.new(2007, 5, 9), 8.0, 10.0, "Task 5"],
             [Date.new(2007, 5, 10), 9.0, 11.0, "Task 6"],
-            [],
-            [nil, nil, nil], # 3 empty cells with only borders
-            [],
-            [],
         ]
       end
 
-      it 'includes empty rows' do
+      it 'includes empty rows except trailing ones' do
         index = 0
         subject.each_row_streaming(include_empty_rows: true) do |row|
+          binding.pry if index == 12
           expect(row.map { |c| c&.value }).to eq expected_rows[index]
           index += 1
         end
-        expect(index).to eq 16
+        expect(index).to eq 12
       end
     end
 
@@ -621,20 +615,16 @@ describe Roo::Excelx do
             [Date.new(2007, 5, 8), 10.75, 12.75, nil, "Task 4", nil],
             [Date.new(2007, 5, 9), 8.0, 10.0, nil, "Task 5", nil],
             [Date.new(2007, 5, 10), 9.0, 11.0, nil, "Task 6", nil],
-            [nil, nil, nil, nil, nil, nil],
-            [nil, nil, nil, nil, nil, nil],
-            [nil, nil, nil, nil, nil, nil],
-            [nil, nil, nil, nil, nil, nil],
         ]
       end
 
-      it 'includes empty rows and empty cells' do
+      it 'includes empty rows and empty cells, except trailing rows' do
         index = 0
         subject.each_row_streaming(pad_cells: true, include_empty_rows: true) do |row|
           expect(row.map { |c| c&.value }).to eq expected_rows[index]
           index += 1
         end
-        expect(index).to eq 16
+        expect(index).to eq 12
       end
     end
 
