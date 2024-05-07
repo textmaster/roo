@@ -671,8 +671,17 @@ describe Roo::Excelx do
 
   describe '_x000D_' do
     let(:path) { 'test/files/x000D.xlsx' }
-    it 'does not contain _x000D_' do
+    it 'replaces _x000D_ with \n' do
       expect(subject.cell(2, 9)).not_to include('_x000D_')
+      expect(subject.cell(2, 9)).to include("\n")
+    end
+  end
+
+  describe '_x000B_' do
+    let(:path) { 'test/files/x000B.xlsx' }
+    it 'it replaces _x000B_ with \n' do
+      expect(subject.cell(5, 3)).not_to include('_x000B_')
+      expect(subject.cell(5, 3)).to include("\n")
     end
   end
 
