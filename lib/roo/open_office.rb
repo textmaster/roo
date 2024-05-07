@@ -423,7 +423,10 @@ module Roo
       @style[sheet][key] = style_name
       case @cell_type[sheet][key]
       when :float
-        @cell[sheet][key] = (table_cell.attributes['value'].to_s.include?(".") || table_cell.children.first.text.include?(".")) ? v.to_f : v.to_i
+        value = (table_cell.attributes['value'].to_s.include?(".") || table_cell.children.first.text.include?(".")) ? v.to_f : v.to_i
+        value = 'true' if formula == '=TRUE()'
+        value = 'false' if formula == '=FALSE()'
+        @cell[sheet][key] = value
       when :percentage
         @cell[sheet][key] = v.to_f
       when :string
@@ -517,7 +520,7 @@ module Roo
                         str_v += child.content #.text
                       end
                     end
-                    str_v.gsub!(/&apos;/, "'") # special case not supported by unescapeHTML
+                    str_v = str_v.gsub(/&apos;/, "'") # special case not supported by unescapeHTML
                     str_v = CGI.unescapeHTML(str_v)
                   end # == 'p'
                 end
