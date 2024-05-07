@@ -27,11 +27,11 @@ module Roo
       private
 
       def fix_invalid_shared_strings(doc)
-        invalid = { '_x000D_'  => "\n" }
+        invalid = { '_x000D_'  => "\n", '_x000B_' => "\n"}
         xml = doc.to_s
-        return doc unless xml[/#{invalid.keys.join('|')}/]
+        invalid.each { |k, v| xml.gsub!(k, v) }
 
-        ::Nokogiri::XML(xml.gsub(/#{invalid.keys.join('|')}/, invalid))
+        ::Nokogiri::XML(xml)
       end
 
       def extract_shared_strings
